@@ -44,22 +44,19 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v2
 
-      - name: Bump Version and Tag
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "github-actions@xip.co"
-          yarn version --patch
-          echo "NEW_VERSION=$(cat package.json | jq -r '.version')" >> $GITHUB_ENV
-
-      - name: Run Build
+      - name: Build
         run: |
           yarn install
           export NODE_ENV=production
           yarn build
 
-      - name: Commit & Push
+      - name: Bump Version, Tag, Commit
         run: |
+          git config user.name "GitHub Actions"
+          git config user.email "github-actions@xip.co"
           git add -f dist
-          git commit -m "Automated build for release, version: ${{ env.NEW_VERSION }}"
+          yarn version --patch
+          echo "NEW_VERSION=$(cat package.json | jq -r '.version')" >> $GITHUB_ENV
+          git commit --amend --no-edit -m "Automated build for release ${{ env.NEW_VERSION }}"
           git tag ${{ env.NEW_VERSION }}
           git push --follow-tags
