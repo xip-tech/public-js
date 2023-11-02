@@ -1,1 +1,1 @@
-console.log("Hello webflow");
+console.log('Hello webflow');

@@ -1,1 +1,1 @@
-console.log("Hello clickfunnels");
+console.log('Hello clickfunnels');
