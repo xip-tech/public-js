@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie';
 import _ from 'lodash';
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
   const originalFetch = window.fetch;
   const url = new URL(window.location.href);
   const queryParams: Record<string, string> = {};

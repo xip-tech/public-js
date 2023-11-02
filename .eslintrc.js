@@ -21,12 +21,22 @@ module.exports = {
     'prefer-const': 'error',
     'no-var': 'error',
     '@typescript-eslint/no-explicit-any': 'error',
+    'prefer-arrow-callback': 'error',
+    'arrow-body-style': ['error', 'as-needed'],
+    'consistent-return': 'error',
+    'arrow-parens': ['error', 'always'],
   },
   overrides: [
     {
       files: ['webpack.config.js'],
       rules: {
         '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
+    {
+      files: ['*.d.ts'],
+      rules: {
+        'no-unused-vars': 'off',
       },
     },
   ],
