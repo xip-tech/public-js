@@ -20,4 +20,12 @@ module.exports = {
     'no-var': 'error',
     '@typescript-eslint/no-explicit-any': 'error',
   },
+  overrides: [
+    {
+      files: ['webpack.config.js'],
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
+  ],
 };
