@@ -59,7 +59,7 @@ jobs:
 
       - name: Commit & Push
         run: |
-          git add dist
+          git add -f dist
           git commit -m "Automated build for release, version: ${{ env.NEW_VERSION }}"
           git tag ${{ env.NEW_VERSION }}
           git push --follow-tags
