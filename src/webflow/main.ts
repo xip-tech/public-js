@@ -8,6 +8,8 @@
  */
 import Cookies from 'js-cookie';
 import _ from 'lodash';
+import { identifyFromEmail } from '../common/segment-utils';
+import { initializeWistiaSegmentIntegration } from '../common/wistia-utils';
 
 document.addEventListener('DOMContentLoaded', () => {
   const url = new URL(window.location.href);
@@ -114,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Call analytics.identify() if we found any identity in the form
       if (identifyUserId && Object.keys(identifyFields).length > 0) {
-        window.analytics.identify(identifyUserId, identifyFields);
+        identifyFromEmail(identifyUserId, identifyFields);
       }
     });
   });
@@ -166,71 +168,5 @@ document.addEventListener('DOMContentLoaded', () => {
   }).observe(document.body, { childList: true, subtree: true });
 });
 
-type SegmentTraits = { email?: string; firstName?: string; lastName?: string };
-const currentSegmentTraits = (): SegmentTraits => {
-  // Have to use this nasty type hack because the typescript definitions for segment are wrong (they say that .traits()
-  // returns nothing but it actually returns the current traits)
-  const traits = window.analytics?.user()?.traits() as unknown as SegmentTraits | undefined;
-  return traits || {};
-};
-
 // Wistia + Segment integration
-window._wq = window._wq || [];
-window._wq.push({
-  id: '_all',
-  onReady: function (video) {
-    // Extract some common properties from the video that we want to send with all of our track events
-    const commonTrackProperties = {
-      wistiaVideoId: video.hashedId(),
-      videoName: video.name(),
-      wistiaVisitorKey: video.visitorKey(),
-    };
-
-    // Attempt to grab the user email from segment and pass it to wistia
-    window.analytics.ready(() => {
-      let userEmail = currentSegmentTraits()?.email;
-      if (!userEmail) {
-        const userId = window.analytics?.user()?.id();
-        if (userId && userId.includes('@')) {
-          userEmail = userId;
-        }
-      }
-
-      if (userEmail) {
-        video.email(userEmail);
-      }
-    });
-
-    // When the video is played for the first time, fire a segment event
-    let playEventFired = false;
-    video.bind('play', () => {
-      if (!playEventFired) {
-        window.analytics.track('Video Played', commonTrackProperties);
-        playEventFired = true;
-      }
-    });
-
-    // When the user watches key threshold amounts of the video, fire segment events
-    video.bind('percentwatchedchanged', (percent: number, lastPercent: number) => {
-      [0.25, 0.5, 0.75, 0.95].forEach((threshold) => {
-        if (percent >= threshold && lastPercent < threshold) {
-          window.analytics.track('Video Watched', {
-            ...commonTrackProperties,
-            fractionWatched: threshold,
-          });
-        }
-      });
-    });
-
-    // If a conversion occurred using Wistia's built-in CTA, track it
-    video.bind('conversion', (type, email, firstName, lastName) => {
-      window.analytics.track('Video Lead Captured', {
-        ...commonTrackProperties,
-        conversionType: type,
-        email,
-        firstName,
-        lastName,
-      });
-    });
-  },
-});
+initializeWistiaSegmentIntegration();

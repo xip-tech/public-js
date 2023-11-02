@@ -1,7 +1,9 @@
 import Cookies from 'js-cookie';
 import _ from 'lodash';
+import { identifyFromEmail } from '../common/segment-utils';
+import { initializeWistiaSegmentIntegration } from '../common/wistia-utils';
+
 document.addEventListener('DOMContentLoaded', () => {
-  const originalFetch = window.fetch;
   const url = new URL(window.location.href);
   const queryParams: Record<string, string> = {};
 
@@ -50,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Override fetch
+  const originalFetch = window.fetch;
   window.fetch = function (...args) {
     const [url, options] = args;
     const urlString = (url instanceof Request ? url.url : url).toString();
@@ -70,10 +73,13 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (idAttrs.email) {
-        window.analytics.identify(idAttrs.email.trim().toLowerCase(), idAttrs);
+        identifyFromEmail(idAttrs.email, idAttrs);
       }
     }
 
     return originalFetch.apply(this, args);
   };
+
+  // Track Wistia events via Segment
+  initializeWistiaSegmentIntegration();
 });
