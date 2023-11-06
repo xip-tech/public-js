@@ -28,4 +28,12 @@ module.exports = {
       'This code is intended for private use only. ©2023 Xip Technologies, Inc. All rights reserved.\n\nThis code is proprietary to Xip Technologies, Inc. Unauthorized copying, modification, distribution, or any action in reliance on the contents of this material is strictly prohibited.',
     ),
   ],
+  devServer: {
+    static: {
+      directory: path.join(__dirname, 'dev-server-public'),
+    },
+    watchFiles: [path.join(__dirname, 'dev-server-public/**/*.html')],
+    compress: true,
+    port: 9000,
+  },
 };

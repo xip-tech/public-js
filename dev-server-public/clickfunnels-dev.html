@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clickfunnels Dev Test</title>
+    <script src="http://localhost:9000/clickfunnels.js"></script>
+    <style>
+      /* Base styles courtesy of GPT4 */
+      /* Basic Reset */
+      body,
+      h1,
+      form,
+      button {
+        margin: 0;
+        padding: 0;
+        font-family: 'Arial', sans-serif;
+      }
+
+      /* Page Styles */
+      body {
+        background-color: #f4f4f4;
+        padding: 50px;
+      }
+
+      h1 {
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      /* Form Styles */
+      form {
+        margin-bottom: 20px;
+        background: #fff;
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      input[type='text'] {
+        display: block;
+        width: 350px;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      input[type='submit'] {
+        background-color: #007bff;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      input[type='submit']:hover {
+        background-color: #0056b3;
+      }
+
+      /* Button Styles */
+      button {
+        background-color: #007bff;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 10px;
+        transition: background 0.3s;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+
+      button:last-child {
+        margin-right: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>ClickFunnels Dev Test Page</h1>
+
+    <form id="clickfunnels-form" action="#" method="POST">
+      <input type="text" name="email" placeholder="Email" />
+      <input type="text" name="name" placeholder="Name" />
+      <input type="submit" value="Submit" />
+    </form>
+
+    <script>
+      document.getElementById('clickfunnels-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        const bodyData = new URLSearchParams();
+
+        for (let pair of formData.entries()) {
+          bodyData.append(pair[0], pair[1]);
+        }
+
+        window.fetch('#courses.xip', {
+          method: 'POST',
+          body: bodyData.toString(),
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        });
+      });
+    </script>
+  </body>
+</html>

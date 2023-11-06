@@ -45,6 +45,20 @@ The final compiled code is hosted and served using [jsdelivr](https://www.jsdeli
 
 6. Open a PR against the `main` branch on GitHub.
 
+### Running the Dev Server
+
+To simulate and test how the scripts will behave on the actual websites, you can run the provided development server. This is especially helpful when debugging and ensuring that the scripts load and function correctly.
+
+1. Start the development server:
+    ```bash
+    yarn start
+    ```
+
+2. Navigate to `http://localhost:9000` in your browser. This will serve the files from the `dev-server-public` directory.
+
+3. You may want to alter the HTML pages in `dev-server-public` to exercise any new behavior you've included in your changes.
+
+
 ## Creating a New Release
 1. Make sure your PR has been reviewed and all tests are passing.
 2. Merge your PR
