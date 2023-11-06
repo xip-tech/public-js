@@ -8,7 +8,7 @@
  */
 import Cookies from 'js-cookie';
 import _ from 'lodash';
-import { identifyFromEmail } from '../common/segment-utils';
+import { identifyFromEmail, trackFacebookBasicEvent } from '../common/segment-utils';
 import { initializeWistiaSegmentIntegration } from '../common/wistia-utils';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -114,9 +114,10 @@ document.addEventListener('DOMContentLoaded', () => {
       // Call analytics.track() with the form fields
       window.analytics.track('Webflow Form Submitted', formFields);
 
-      // Call analytics.identify() if we found any identity in the form
+      // Call analytics.identify() and notify FB of a captured lead if we found any identity in the form
       if (identifyUserId && Object.keys(identifyFields).length > 0) {
         identifyFromEmail(identifyUserId, identifyFields);
+        trackFacebookBasicEvent('Lead');
       }
     });
   });

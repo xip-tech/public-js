@@ -47,3 +47,33 @@ export const identifyFromEmail = (email: string, traits: Record<string, string>)
   }
   window.analytics.identify(email.trim().toLowerCase(), updatedTraits);
 };
+
+/**
+ * Standard Facebook events that don't take any required metadata
+ */
+type FacebookBasicEvent =
+  | 'AddPaymentInfo'
+  | 'AddToCart'
+  | 'AddToWishlist'
+  | 'CompleteRegistration'
+  | 'Contact'
+  | 'CustomizeProduct'
+  | 'Donate'
+  | 'FindLocation'
+  | 'InitiateCheckout'
+  | 'Lead'
+  | 'Schedule'
+  | 'Search'
+  | 'SubmitApplication'
+  | 'ViewContent';
+
+/**
+ * Trigger a standard Facebook event.
+ *
+ * @see https://www.facebook.com/business/help/402791146561655
+ *
+ * @param eventName
+ */
+export const trackFacebookBasicEvent = (eventName: FacebookBasicEvent) => {
+  window.analytics.track(eventName, {}, { integrations: { All: false, 'Facebook Pixel': true } });
+};
