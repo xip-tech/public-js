@@ -4,6 +4,8 @@
  * This code is proprietary to Xip Technologies, Inc. Unauthorized copying, modification, distribution, or any action in reliance on the contents of this material is strictly prohibited.
  */
 
+/*! js-cookie v3.0.1 | MIT */
+
 /**
  * @license
  * Lodash <https://lodash.com/>
