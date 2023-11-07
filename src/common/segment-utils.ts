@@ -1,7 +1,7 @@
 import { AnalyticsBrowser } from '@segment/analytics-next';
 
 /**
- * This is the shard instance of analytics (the Segment library) that should be used across the page.
+ * This is the shared instance of analytics (the Segment library) that should be used across the page.
  *
  * Code can call track, identify, etc. immediately by referring to this variable. However, the data won't actually be
  * sent to segment until enableSegment() is called.
