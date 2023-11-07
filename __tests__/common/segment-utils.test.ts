@@ -1,9 +1,60 @@
 import {
+  _test_allowSegmentReload,
   analytics,
   currentSegmentUserEmail,
+  enableSegment,
   identifyFromEmail,
 } from '../../src/common/segment-utils';
 import { User } from '@segment/analytics-next';
+
+describe('enableSegment', () => {
+  beforeEach(() => {
+    _test_allowSegmentReload();
+  });
+
+  it('should load the first time it is called', () => {
+    const mockLoad = jest.fn();
+    const mockPage = jest.fn();
+    analytics.load = mockLoad;
+    analytics.page = mockPage;
+
+    enableSegment('abc123');
+
+    expect(mockLoad).toHaveBeenCalledTimes(1);
+    expect(mockLoad).toHaveBeenCalledWith({ writeKey: 'abc123' });
+    expect(mockPage).toHaveBeenCalledTimes(1);
+  });
+
+  it('should be a no-op the second time it is called', () => {
+    const mockLoad = jest.fn();
+    const mockPage = jest.fn();
+    analytics.load = mockLoad;
+    analytics.page = mockPage;
+
+    enableSegment('abc123');
+    enableSegment('abc123');
+
+    expect(mockLoad).toHaveBeenCalledTimes(1);
+    expect(mockLoad).toHaveBeenCalledWith({ writeKey: 'abc123' });
+    expect(mockPage).toHaveBeenCalledTimes(1);
+  });
+
+  it('should complain if it is called with two different write keys', () => {
+    const mockLoad = jest.fn();
+    const mockPage = jest.fn();
+    analytics.load = mockLoad;
+    analytics.page = mockPage;
+
+    enableSegment('abc123');
+    expect(() => enableSegment('def456')).toThrow(
+      'Segment was already loaded with a different write key',
+    );
+
+    expect(mockLoad).toHaveBeenCalledTimes(1);
+    expect(mockLoad).toHaveBeenCalledWith({ writeKey: 'abc123' });
+    expect(mockPage).toHaveBeenCalledTimes(1);
+  });
+});
 
 describe('currentSegmentUserEmail', () => {
   it('should return the email from user traits', async () => {

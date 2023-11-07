@@ -11,6 +11,13 @@ export const analytics = new AnalyticsBrowser();
 let segmentLoadedWriteKey: null | string = null;
 
 /**
+ * For testing purposes only. This method should not be called in production code.
+ */
+export const _test_allowSegmentReload = () => {
+  segmentLoadedWriteKey = null;
+};
+
+/**
  * Allow segment to be used on the page. Once this method is called, any previous and future calls to
  * analytics.identify(), analytics.track() etc. will be sent to segment. This will also automatically trigger a call to
  * analytics.page() so that a page view event can be captured.
