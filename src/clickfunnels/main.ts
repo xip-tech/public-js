@@ -1,7 +1,9 @@
 import Cookies from 'js-cookie';
 import _ from 'lodash';
-import { identifyFromEmail } from '../common/segment-utils';
+import { analytics, enableSegment, identifyFromEmail } from '../common/segment-utils';
 import { initializeWistiaSegmentIntegration } from '../common/wistia-utils';
+
+enableSegment('YTsllNl2tO9CSJ8OqG7qtz2EW00HElZG');
 
 document.addEventListener('DOMContentLoaded', () => {
   const url = new URL(window.location.href);
@@ -66,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const contactAttrs = extractContactAttrs(parsedBody);
       const idAttrs = extractIdentityAttrs(contactAttrs);
 
-      window.analytics.track('Form Submitted', {
+      analytics.track('Form Submitted', {
         ...additionalData,
         queryParams,
         contactAttrs,

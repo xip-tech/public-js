@@ -8,8 +8,15 @@
  */
 import Cookies from 'js-cookie';
 import _ from 'lodash';
-import { identifyFromEmail } from '../common/segment-utils';
+import {
+  analytics,
+  enableSegment,
+  identifyFromEmail,
+  trackFacebookBasicEvent,
+} from '../common/segment-utils';
 import { initializeWistiaSegmentIntegration } from '../common/wistia-utils';
+
+enableSegment('KWF7tUxgxDY0FvsGHkV3bRTzEGcCrykK');
 
 document.addEventListener('DOMContentLoaded', () => {
   const url = new URL(window.location.href);
@@ -112,11 +119,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Call analytics.track() with the form fields
-      window.analytics.track('Webflow Form Submitted', formFields);
+      analytics.track('Webflow Form Submitted', formFields);
 
-      // Call analytics.identify() if we found any identity in the form
+      // Call analytics.identify() and notify FB of a captured lead if we found any identity in the form
       if (identifyUserId && Object.keys(identifyFields).length > 0) {
         identifyFromEmail(identifyUserId, identifyFields);
+        trackFacebookBasicEvent('Lead');
       }
     });
   });
@@ -134,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
     switch (dataEventValue) {
       case 'schedule-click': {
         const innerText = event.target.innerText.trim();
-        window.analytics.track('Schedule Intent Button Clicked', { innerText });
+        analytics.track('Schedule Intent Button Clicked', { innerText });
         break;
       }
     }

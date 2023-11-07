@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Webflow Dev Test</title>
+    <script src="http://localhost:9000/webflow.js"></script>
+    <style>
+      /* Base styles courtesy of GPT4 */
+      /* Basic Reset */
+      body,
+      h1,
+      form,
+      button {
+        margin: 0;
+        padding: 0;
+        font-family: 'Arial', sans-serif;
+      }
+
+      /* Page Styles */
+      body {
+        background-color: #f4f4f4;
+        padding: 50px;
+      }
+
+      h1 {
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      /* Form Styles */
+      form {
+        margin-bottom: 20px;
+        background: #fff;
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      input[type='text'] {
+        display: block;
+        width: 350px;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      input[type='submit'] {
+        background-color: #007bff;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      input[type='submit']:hover {
+        background-color: #0056b3;
+      }
+
+      /* Button Styles */
+      button {
+        background-color: #007bff;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 10px;
+        transition: background 0.3s;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+
+      button:last-child {
+        margin-right: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Webflow Dev Test Page</h1>
+
+    <form id="test-form" action="#" method="POST">
+      <input type="text" name="email" placeholder="Email" />
+      <input type="text" name="name" placeholder="Name" />
+      <input type="submit" value="Submit" />
+    </form>
+
+    <script>
+      document.getElementById('test-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        console.log('Form submitted!');
+      });
+
+      function addOrUpdateUtmParams() {
+        const params = new URLSearchParams(window.location.search);
+        params.set('utm_source', 'Facebook');
+        params.set('utm_campaign', '123456');
+        params.set('utm_adset', '234567');
+        params.set('utm_ad', '345678');
+        window.location.search = params.toString();
+      }
+    </script>
+
+    <button onclick="addOrUpdateUtmParams()">Add UTM Params</button>
+    <button data-event="schedule-click">Event: Schedule Click</button>
+    <button data-event="something-else">Event: Something Else</button>
+    <button>Plain Button</button>
+  </body>
+</html>
