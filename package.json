@@ -3,6 +3,7 @@
   "version": "0.0.7",
   "license": "UNLICENSED",
   "dependencies": {
+    "@segment/analytics-next": "^1.59.0",
     "js-cookie": "^3.0.5",
     "lodash": "^4.17.21",
     "ts-loader": "^9.5.0",
@@ -14,7 +15,6 @@
     "@types/jest": "^29.5.7",
     "@types/js-cookie": "^3.0.5",
     "@types/lodash": "^4.14.200",
-    "@types/segment-analytics": "^0.0.36",
     "@typescript-eslint/eslint-plugin": "^6.9.1",
     "@typescript-eslint/parser": "^6.9.1",
     "eslint": "^8.52.0",

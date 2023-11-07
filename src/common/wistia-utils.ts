@@ -1,4 +1,4 @@
-import { currentSegmentUserEmail } from './segment-utils';
+import { analytics, currentSegmentUserEmail } from './segment-utils';
 
 export const initializeWistiaSegmentIntegration = () => {
   window._wq = window._wq || [];
@@ -13,8 +13,8 @@ export const initializeWistiaSegmentIntegration = () => {
       };
 
       // Attempt to grab the user email from segment and pass it to wistia
-      window.analytics.ready(() => {
-        const userEmail = currentSegmentUserEmail();
+      analytics.ready(async () => {
+        const userEmail = await currentSegmentUserEmail();
         if (userEmail) {
           video.email(userEmail);
         }
@@ -24,7 +24,7 @@ export const initializeWistiaSegmentIntegration = () => {
       let playEventFired = false;
       video.bind('play', () => {
         if (!playEventFired) {
-          window.analytics.track('Video Played', commonTrackProperties);
+          analytics.track('Video Played', commonTrackProperties);
           playEventFired = true;
         }
       });
@@ -33,7 +33,7 @@ export const initializeWistiaSegmentIntegration = () => {
       video.bind('percentwatchedchanged', (percent: number, lastPercent: number) => {
         [0.25, 0.5, 0.75, 0.95].forEach((threshold) => {
           if (percent >= threshold && lastPercent < threshold) {
-            window.analytics.track('Video Watched', {
+            analytics.track('Video Watched', {
               ...commonTrackProperties,
               fractionWatched: threshold,
             });
@@ -43,7 +43,7 @@ export const initializeWistiaSegmentIntegration = () => {
 
       // If a conversion occurred using Wistia's built-in CTA, track it
       video.bind('conversion', (type, email, firstName, lastName) => {
-        window.analytics.track('Video Lead Captured', {
+        analytics.track('Video Lead Captured', {
           ...commonTrackProperties,
           conversionType: type,
           email,
