@@ -58,6 +58,19 @@ To simulate and test how the scripts will behave on the actual websites, you can
 
 3. You may want to alter the HTML pages in `dev-server-public` to exercise any new behavior you've included in your changes.
 
+### Ignoring `dist` changes locally
+When working locally, the `dist` dir will end up with changes that should not be checked in. Unfortunately adding `dist` to `.gitignore` doesn't do much, because we need to keep these files checked in for our automated build process w/GitHub actions to work properly.
+
+If you're annoyed by the clutter of seeing all of the changes to the `dist` dir when you run `git status`, you can tell your local git to ignore these changes:
+
+```bash
+git ls-files -z dist/ | xargs -0 git update-index --assume-unchanged
+```
+This will tell Git to ignore changes to the files in the dist directory only on your local machine, making your git status cleaner. When you're ready to track changes again, you can revert this with:
+
+```bash
+git ls-files -z dist/ | xargs -0 git update-index --no-assume-unchanged
+```
 
 ## Creating a New Release
 1. Make sure your PR has been reviewed and all tests are passing.
