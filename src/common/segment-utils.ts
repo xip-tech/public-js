@@ -148,6 +148,8 @@ export const urlPathFilter: Plugin = {
         funnel_step: funnelStep,
         version: version,
       };
+    } else {
+      return ctx;
     }
 
     // Continue with the lowercase conversion
