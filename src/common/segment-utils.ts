@@ -109,7 +109,7 @@ export const trackFacebookBasicEvent = (eventName: FacebookBasicEvent) => {
 /**
  * Register a Segment plugin that will parse url paths from learn.xip.co.
  *
- * @see https://www.notion.so/xip/Xip-Funnel-URL-Path-Pattern-Specification-7b88e6ff5691494bb593a81fc6c127b1?pvs=4
+ * @see https://github.com/segmentio/analytics-next/tree/master/packages/browser#-plugins
  *
  */
 export const urlPathFilter: Plugin = {
@@ -153,21 +153,15 @@ export const urlPathFilter: Plugin = {
       // Append these as properties to the event
       ctx.event.properties = {
         ...ctx.event.properties,
-        instructor: instructor,
-        funnel_type: funnelType,
-        funnel_step: funnelStep,
-        version: version,
+        instructor: instructor.replace('/', ''),
+        funnelType: funnelType,
+        funnelStep: funnelStep,
+        funnelVersion: version,
       };
     } else {
       return ctx;
     }
 
-    // Continue with the lowercase conversion
-    ctx.event.event = ctx.event.event.toLowerCase();
-
     return ctx;
   },
 };
-
-// register Clickfunnels Path Filter plugin
-analytics.register(urlPathFilter);
