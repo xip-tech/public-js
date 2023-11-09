@@ -1,4 +1,5 @@
 import { AnalyticsBrowser } from '@segment/analytics-next';
+import type { Plugin } from '@segment/analytics-next';
 
 /**
  * This is the shared instance of analytics (the Segment library) that should be used across the page.
@@ -104,3 +105,57 @@ type FacebookBasicEvent =
 export const trackFacebookBasicEvent = (eventName: FacebookBasicEvent) => {
   analytics.track(eventName, {}, { integrations: { All: false, 'Facebook Pixel': true } });
 };
+
+/**
+ * Register a Segment plugin that will parse url paths from learn.xip.co.
+ *
+ * @see https://www.notion.so/xip/Xip-Funnel-URL-Path-Pattern-Specification-7b88e6ff5691494bb593a81fc6c127b1?pvs=4
+ *
+ */
+export const urlPathFilter: Plugin = {
+  name: 'Clickfunnels Path Filter',
+  type: 'enrichment',
+  version: '1.0.0',
+
+  isLoaded: () => true,
+  load: () => Promise.resolve(),
+
+  track: (ctx) => {
+    const url = new URL(ctx.event.properties?.url || '');
+    if (url.hostname !== 'learn.xip.co') {
+      return ctx;
+    }
+
+    let urlPath = url.pathname;
+
+    // Handle the case where there is an extra '-page' at the end of the path
+    if (urlPath.endsWith('-page')) {
+      urlPath = urlPath.slice(0, -5);
+    }
+
+    const pathComponents = urlPath.split('-');
+
+    // Add checks to ensure the URL path matches the expected pattern
+    if (pathComponents.length >= 3 && pathComponents.length <= 4) {
+      // Assuming pathComponents array contains [instructor, funnel type, funnel step, version] in order
+      const [instructor, funnelType, funnelStep, version = ''] = pathComponents;
+
+      // Append these as properties to the event
+      ctx.event.properties = {
+        ...ctx.event.properties,
+        instructor: instructor,
+        funnel_type: funnelType,
+        funnel_step: funnelStep,
+        version: version,
+      };
+    }
+
+    // Continue with the lowercase conversion
+    ctx.event.event = ctx.event.event.toLowerCase();
+
+    return ctx;
+  },
+};
+
+// register Clickfunnels Path Filter plugin
+analytics.register(urlPathFilter);
