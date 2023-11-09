@@ -133,6 +133,16 @@ export const urlPathFilter: Plugin = {
       urlPath = urlPath.slice(0, -5);
     }
 
+    // Handle the case where the path ends in '-top-level'
+    if (urlPath.endsWith('-top-level')) {
+      const funnel = urlPath.slice(0, -10);
+      ctx.event.properties = {
+        ...ctx.event.properties,
+        funnel,
+      };
+      return ctx;
+    }
+
     const pathComponents = urlPath.split('-');
 
     // Add checks to ensure the URL path matches the expected pattern
