@@ -1,20 +1,16 @@
 import Cookies from 'js-cookie';
 import _ from 'lodash';
-import {
-  analytics,
-  enableSegment,
-  identifyFromEmail,
-  urlPathFilter,
-} from '../common/segment-utils';
+import { analytics, enableSegment, identifyFromEmail } from '../common/segment-utils';
 import { initializeWistiaSegmentIntegration } from '../common/wistia-utils';
+import { ClickfunnelsUrlEnrichmentPlugin } from '../clickfunnels/segment-utils';
 
-enableSegment('YTsllNl2tO9CSJ8OqG7qtz2EW00HElZG');
+enableSegment('YTsllNl2tO9CSJ8OqG7qtz2EW00HElZG', ClickfunnelsUrlEnrichmentPlugin);
 
 document.addEventListener('DOMContentLoaded', () => {
   const url = new URL(window.location.href);
   const queryParams: Record<string, string> = {};
 
-  analytics.register(urlPathFilter);
+  analytics.register(ClickfunnelsUrlEnrichmentPlugin);
 
   for (const [key, value] of url.searchParams.entries()) {
     queryParams[_.camelCase(key)] = value;
@@ -76,8 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const contactAttrs = extractContactAttrs(parsedBody);
       const idAttrs = extractIdentityAttrs(contactAttrs);
 
-      console.log('Form Submitted Tracking');
-
       analytics.track('Clickfunnels Form Submitted', {
         ...additionalData,
         queryParams,
@@ -118,8 +112,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Track the click event with analytics
     analytics.track('Clickfunnels Button Clicked', {
-      buttonText: buttonText,
-      queryParams: queryParams,
+      buttonText,
+      queryParams,
       ...additionalData,
     });
   });

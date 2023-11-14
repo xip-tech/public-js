@@ -26,10 +26,11 @@ export const _test_allowSegmentReload = () => {
  * Only one write key can be used per page.
  *
  * @param writeKey The write key of the segment source that we wish to use for this page.
+ * @param plugins Optional list of plugins to enable.
  */
-export const enableSegment = (writeKey: string) => {
+export const enableSegment = (writeKey: string, ...plugins: Plugin[]) => {
   if (segmentLoadedWriteKey == null) {
-    analytics.load({ writeKey });
+    analytics.load({ writeKey, plugins });
     analytics.page();
     segmentLoadedWriteKey = writeKey;
   } else if (segmentLoadedWriteKey !== writeKey) {
@@ -104,64 +105,4 @@ type FacebookBasicEvent =
  */
 export const trackFacebookBasicEvent = (eventName: FacebookBasicEvent) => {
   analytics.track(eventName, {}, { integrations: { All: false, 'Facebook Pixel': true } });
-};
-
-/**
- * Register a Segment plugin that will parse url paths from learn.xip.co.
- *
- * @see https://github.com/segmentio/analytics-next/tree/master/packages/browser#-plugins
- *
- */
-export const urlPathFilter: Plugin = {
-  name: 'Clickfunnels Path Filter',
-  type: 'enrichment',
-  version: '1.0.0',
-
-  isLoaded: () => true,
-  load: () => Promise.resolve(),
-
-  track: (ctx) => {
-    const url = new URL(ctx.event.properties?.url || '');
-    if (url.hostname !== 'learn.xip.co') {
-      return ctx;
-    }
-
-    let urlPath = url.pathname;
-
-    // Handle the case where there is an extra '-page' at the end of the path
-    if (urlPath.endsWith('-page')) {
-      urlPath = urlPath.slice(0, -5);
-    }
-
-    // Handle the case where the path ends in '-top-level'
-    if (urlPath.endsWith('-top-level')) {
-      const funnel = urlPath.slice(0, -10);
-      ctx.event.properties = {
-        ...ctx.event.properties,
-        funnel,
-      };
-      return ctx;
-    }
-
-    const pathComponents = urlPath.split('-');
-
-    // Add checks to ensure the URL path matches the expected pattern
-    if (pathComponents.length >= 3 && pathComponents.length <= 4) {
-      // Assuming pathComponents array contains [instructor, funnel type, funnel step, version] in order
-      const [instructor, funnelType, funnelStep, version = ''] = pathComponents;
-
-      // Append these as properties to the event
-      ctx.event.properties = {
-        ...ctx.event.properties,
-        instructor: instructor.replace('/', ''),
-        funnelType: funnelType,
-        funnelStep: funnelStep,
-        funnelVersion: version,
-      };
-    } else {
-      return ctx;
-    }
-
-    return ctx;
-  },
 };

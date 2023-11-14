@@ -13,6 +13,7 @@ module.exports = {
     'plugin:jest/recommended',
   ],
   rules: {
+    'object-shorthand': ['error', 'properties'],
     'prettier/prettier': 'error',
     curly: 'error',
     'no-undef': 'error',
