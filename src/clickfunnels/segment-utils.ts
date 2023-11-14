@@ -23,9 +23,6 @@ export const ClickfunnelsUrlEnrichmentPlugin: Plugin = {
 
   track: (ctx) => {
     const url = new URL(ctx.event.properties?.url || '');
-    if (url.hostname !== 'learn.xip.co') {
-      return ctx;
-    }
 
     let urlPath = url.pathname;
 

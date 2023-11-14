@@ -32,7 +32,11 @@ export const _test_allowSegmentReload = () => {
  */
 export const enableSegment = (writeKey: string, ...plugins: Plugin[]) => {
   if (segmentLoadedWriteKey == null) {
-    analytics.load({ writeKey, plugins });
+    if (plugins.length > 0) {
+      analytics.load({ writeKey, plugins });
+    } else {
+      analytics.load({ writeKey });
+    }
     analytics.page();
     segmentLoadedWriteKey = writeKey;
   } else if (segmentLoadedWriteKey !== writeKey) {
