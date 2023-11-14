@@ -1,5 +1,7 @@
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import type { Plugin } from '@segment/analytics-next';
+import Cookies from 'js-cookie';
+import _ from 'lodash';
 
 /**
  * This is the shared instance of analytics (the Segment library) that should be used across the page.
@@ -105,4 +107,30 @@ type FacebookBasicEvent =
  */
 export const trackFacebookBasicEvent = (eventName: FacebookBasicEvent) => {
   analytics.track(eventName, {}, { integrations: { All: false, 'Facebook Pixel': true } });
+};
+
+/**
+ * Get additional url and navigator properties that should be included with every event.
+ * @param window The current page window.
+ * @param navigator The current page navigator.
+ */
+export const getAdditionalWindowData = (window: Window, navigator: Navigator) => {
+  const url = new URL(window.location.href);
+
+  const queryParams: Record<string, string> = {};
+
+  for (const [key, value] of url.searchParams.entries()) {
+    queryParams[_.camelCase(key)] = value;
+  }
+
+  const additionalWindowData = {
+    url: url.toString(),
+    path: url.pathname,
+    userAgent: navigator.userAgent,
+    fbc: Cookies.get('fbc'),
+    fbp: Cookies.get('fbp'),
+    queryParams,
+  };
+
+  return additionalWindowData;
 };

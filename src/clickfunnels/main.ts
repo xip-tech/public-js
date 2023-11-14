@@ -1,29 +1,21 @@
-import Cookies from 'js-cookie';
 import _ from 'lodash';
-import { analytics, enableSegment, identifyFromEmail } from '../common/segment-utils';
+import {
+  analytics,
+  enableSegment,
+  identifyFromEmail,
+  getAdditionalWindowData,
+} from '../common/segment-utils';
 import { initializeWistiaSegmentIntegration } from '../common/wistia-utils';
 import { ClickfunnelsUrlEnrichmentPlugin } from '../clickfunnels/segment-utils';
 
 enableSegment('YTsllNl2tO9CSJ8OqG7qtz2EW00HElZG', ClickfunnelsUrlEnrichmentPlugin);
 
 document.addEventListener('DOMContentLoaded', () => {
-  const url = new URL(window.location.href);
-  const queryParams: Record<string, string> = {};
-
-  analytics.register(ClickfunnelsUrlEnrichmentPlugin);
-
-  for (const [key, value] of url.searchParams.entries()) {
-    queryParams[_.camelCase(key)] = value;
-  }
-
-  const additionalData = {
-    url: url.toString(),
-    path: url.pathname,
-    userAgent: navigator.userAgent,
-    fbc: Cookies.get('fbc'),
-    fbp: Cookies.get('fbp'),
-  };
-
+  /**
+   * Parses a URL-encoded string into an object with key-value pairs.
+   * @param str The URL-encoded string to parse.
+   * @returns An object with key-value pairs representing the parsed data.
+   */
   function parseUrlEncoded(str: string) {
     const vals: Record<string, string> = {};
     for (const [k, v] of new URLSearchParams(str)) {
@@ -32,7 +24,11 @@ document.addEventListener('DOMContentLoaded', () => {
     return vals;
   }
 
-  // Transform keys
+  /**
+   * Extracts contact attributes from a parsed ClickFunnels form body.
+   * @param parsedCfFormBody - The parsed ClickFunnels form body.
+   * @returns A record of contact attributes.
+   */
   function extractContactAttrs(parsedCfFormBody: Record<string, string>): Record<string, string> {
     const contactAttrs: Record<string, string> = {};
     for (const [key, value] of Object.entries(parsedCfFormBody)) {
@@ -46,7 +42,11 @@ document.addEventListener('DOMContentLoaded', () => {
     return contactAttrs;
   }
 
-  // Get identity fields
+  /**
+   * Extracts identity attributes from a given contact attributes object.
+   * @param contactAttrs - The contact attributes object to extract identity attributes from.
+   * @returns The extracted identity attributes as a new object.
+   */
   function extractIdentityAttrs(contactAttrs: Record<string, string>): Record<string, string> {
     const attrs: Record<string, string> = {};
     ['email', 'firstName', 'lastName', 'phone'].forEach((key) => {
@@ -57,11 +57,29 @@ document.addEventListener('DOMContentLoaded', () => {
     return attrs;
   }
 
-  // Override fetch
+  /**
+   * Adds a click event listener to the specified button element and tracks the click event with analytics.
+   * @param button - The button element to add the click event listener to.
+   */
+  function addButtonClickListener(button: HTMLButtonElement) {
+    button.addEventListener('click', () => {
+      const buttonText = button.textContent?.trim() || '';
+      const additionalEventData = getAdditionalWindowData(window, navigator);
+
+      // Track the click event with analytics
+      analytics.track('Clickfunnels Button Clicked', {
+        buttonText,
+        ...additionalEventData,
+      });
+    });
+  }
+
+  // Override window.fetch to catch clickfunnels form submissions
   const originalFetch = window.fetch;
   window.fetch = function (...args) {
     const [url, options] = args;
     const urlString = (url instanceof Request ? url.url : url).toString();
+    const additionalEventData = getAdditionalWindowData(window, navigator);
     if (
       ['xip.myclickfunnels', 'courses.xip'].some((url) => urlString.includes(url)) &&
       options &&
@@ -73,8 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const idAttrs = extractIdentityAttrs(contactAttrs);
 
       analytics.track('Clickfunnels Form Submitted', {
-        ...additionalData,
-        queryParams,
+        ...additionalEventData,
         contactAttrs,
       });
 
@@ -86,37 +103,27 @@ document.addEventListener('DOMContentLoaded', () => {
     return originalFetch.apply(this, args);
   };
 
-  // Get the button element
-  const button = document.querySelector('.elButton');
-
-  // Add a click event listener to the button
-  button.addEventListener('click', () => {
-    // Get the text within the button
-    const buttonText = button.textContent.trim();
-
-    // Get the query params
-    const url = new URL(window.location.href);
-    const queryParams: Record<string, string> = {};
-    for (const [key, value] of url.searchParams.entries()) {
-      queryParams[_.camelCase(key)] = value;
+  // Attach listeners to all buttons currently on the page
+  document.querySelectorAll('.elButton').forEach((element) => {
+    // Ensure the element is indeed a button before adding the event listener
+    if (element instanceof HTMLButtonElement) {
+      addButtonClickListener(element);
     }
+  });
 
-    // Additional data
-    const additionalData = {
-      url: url.toString(),
-      path: url.pathname,
-      userAgent: navigator.userAgent,
-      fbc: Cookies.get('fbc'),
-      fbp: Cookies.get('fbp'),
-    };
-
-    // Track the click event with analytics
-    analytics.track('Clickfunnels Button Clicked', {
-      buttonText,
-      queryParams,
-      ...additionalData,
+  // MutationObserver to observe for new buttons added dynamically
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node instanceof HTMLButtonElement && node.matches('.elButton')) {
+          addButtonClickListener(node);
+        }
+      });
     });
   });
+
+  // Start observing the document body for added nodes
+  observer.observe(document.body, { childList: true, subtree: true });
 
   // Track Wistia events via Segment
   initializeWistiaSegmentIntegration();
