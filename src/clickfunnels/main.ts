@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlString = (url instanceof Request ? url.url : url).toString();
     const additionalEventData = getAdditionalWindowData(window, navigator);
     if (
-      ['xip.myclickfunnels', 'learn.xip', 'localhost'].some((url) => urlString.includes(url)) &&
+      ['xip.myclickfunnels', 'learn.xip'].some((url) => urlString.includes(url)) &&
       options &&
       options.body &&
       typeof options.body === 'string'
