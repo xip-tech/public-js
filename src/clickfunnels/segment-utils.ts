@@ -29,7 +29,6 @@ export const ClickfunnelsUrlEnrichmentPlugin: Plugin = {
     /**
      * Handle the case where an event comes from a clickfunnels
      * page, ending in '-page', and not a clickfunnels funnel page.
-     * Handled by trimming the page suffix from the path for the enrichment
      * Example: https://learn.xip.co/instructor/karri_hanninen-vsl-opt_in-v1-page
      */
     if (urlPath.endsWith('-page')) {
@@ -38,11 +37,9 @@ export const ClickfunnelsUrlEnrichmentPlugin: Plugin = {
 
     /**
      * Handle the case where the event comes from a top-level link page. A top-level
-     * link is how funnels are shared on clickfunnels. Upon landing on the top-level
-     * page, visitors are redirected to the first step of the funnel. We should only
-     * ever see pageview events from these top-level pages. Clickfunnels also does not
-     * allow underscores in top level links. Because of this, we only ever tag the event
-     * with a 'funnel' property, and not a funnel step or funnel type.
+     * link is how funnels are shared on clickfunnels and results in an immediate redirect
+     * Clickfunnels also does not allow underscores in top level links. Because of
+     * this, we only ever tag the event with a 'funnel' property, and not a funnel step or funnel type.
      * Example: https://learn.xip.co/instructor/karri-hanninen-vsl-top-level
      */
     if (urlPath.endsWith('-top-level')) {

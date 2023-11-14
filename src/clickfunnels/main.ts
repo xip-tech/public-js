@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
    * Adds a click event listener to the specified button element and tracks the click event with analytics.
    * @param button - The button element to add the click event listener to.
    */
-  function addButtonClickListener(button: HTMLButtonElement) {
+  function addButtonClickListener(button: HTMLElement) {
     button.addEventListener('click', () => {
       const buttonText = button.textContent?.trim() || '';
       const additionalEventData = getAdditionalWindowData(window, navigator);
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlString = (url instanceof Request ? url.url : url).toString();
     const additionalEventData = getAdditionalWindowData(window, navigator);
     if (
-      ['xip.myclickfunnels', 'courses.xip'].some((url) => urlString.includes(url)) &&
+      ['xip.myclickfunnels', 'learn.xip', 'localhost'].some((url) => urlString.includes(url)) &&
       options &&
       options.body &&
       typeof options.body === 'string'
@@ -104,18 +104,15 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Attach listeners to all buttons currently on the page
-  document.querySelectorAll('.elButton').forEach((element) => {
-    // Ensure the element is indeed a button before adding the event listener
-    if (element instanceof HTMLButtonElement) {
-      addButtonClickListener(element);
-    }
+  document.querySelectorAll('.elButton').forEach((element: HTMLElement) => {
+    addButtonClickListener(element);
   });
 
   // MutationObserver to observe for new buttons added dynamically
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
-        if (node instanceof HTMLButtonElement && node.matches('.elButton')) {
+        if (node instanceof HTMLElement && node.matches('.elButton')) {
           addButtonClickListener(node);
         }
       });
