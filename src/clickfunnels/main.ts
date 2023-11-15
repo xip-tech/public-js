@@ -4,6 +4,7 @@ import {
   enableSegment,
   identifyFromEmail,
   getAdditionalWindowData,
+  registerLiveEventHandler,
 } from '../common/segment-utils';
 import { initializeWistiaSegmentIntegration } from '../common/wistia-utils';
 import { ClickfunnelsUrlEnrichmentPlugin } from '../clickfunnels/segment-utils';
@@ -58,19 +59,22 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Adds a click event listener to the specified button element and tracks the click event with analytics.
-   * @param button - The button element to add the click event listener to.
+   * Handles the click event for a button element.
+   * @param event - The click event.
    */
-  function addButtonClickListener(button: HTMLElement) {
-    button.addEventListener('click', () => {
-      const buttonText = button.textContent?.trim() || '';
-      const additionalEventData = getAdditionalWindowData(window, navigator);
+  function buttonClickHandler(event: Event) {
+    // get the element that was clicked
+    const element = event.target as HTMLElement;
 
-      // Track the click event with analytics
-      analytics.track('Clickfunnels Button Clicked', {
-        buttonText,
-        ...additionalEventData,
-      });
+    const buttonText = element.textContent?.trim() || '';
+    const additionalEventData = getAdditionalWindowData(window, navigator);
+
+    console.log('buttonText', buttonText);
+
+    // Track the click event with analytics
+    analytics.track('Clickfunnels Button Clicked', {
+      buttonText,
+      ...additionalEventData,
     });
   }
 
@@ -103,24 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return originalFetch.apply(this, args);
   };
 
-  // Attach listeners to all buttons currently on the page
-  document.querySelectorAll('.elButton').forEach((element: HTMLElement) => {
-    addButtonClickListener(element);
-  });
-
-  // MutationObserver to observe for new buttons added dynamically
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (node instanceof HTMLElement && node.matches('.elButton')) {
-          addButtonClickListener(node);
-        }
-      });
-    });
-  });
-
-  // Start observing the document body for added nodes
-  observer.observe(document.body, { childList: true, subtree: true });
+  registerLiveEventHandler('.elButton', 'click', buttonClickHandler);
 
   // Track Wistia events via Segment
   initializeWistiaSegmentIntegration();

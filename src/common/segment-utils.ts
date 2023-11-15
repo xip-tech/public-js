@@ -138,3 +138,44 @@ export const getAdditionalWindowData = (window: Window, navigator: Navigator) =>
 
   return additionalWindowData;
 };
+
+/**
+ * Registers a live event handler for a given selector and event.
+ * The handler will be called for all matching elements, including those added dynamically.
+ *
+ * @param selector - The CSS selector for the elements to attach the event listener to.
+ * @param event - The name of the event to listen for.
+ * @param callback - The function to call when the event is triggered.
+ */
+export const registerLiveEventHandler = (
+  selector: string,
+  event: string,
+  // eslint-disable-next-line no-unused-vars
+  callback: (event: Event) => void,
+): void => {
+  // Attach event listeners to existing elements
+  document.querySelectorAll(selector).forEach((element) => {
+    element.addEventListener(event, callback);
+  });
+
+  // MutationObserver to observe for new elements added dynamically
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node instanceof HTMLElement) {
+          // Check if the added node itself matches the selector
+          if (node.matches(selector)) {
+            node.addEventListener(event, callback);
+          }
+          // Also, check all its descendant nodes
+          node.querySelectorAll(selector).forEach((child) => {
+            child.addEventListener(event, callback);
+          });
+        }
+      });
+    });
+  });
+
+  // Start observing the document body for added nodes
+  observer.observe(document.body, { childList: true, subtree: true });
+};

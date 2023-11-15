@@ -66,8 +66,6 @@ export const ClickfunnelsUrlEnrichmentPlugin: Plugin = {
         funnelStep,
         version,
       };
-    } else {
-      return ctx;
     }
 
     return ctx;
