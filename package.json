@@ -1,6 +1,6 @@
 {
   "name": "xip-public-js",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "license": "UNLICENSED",
   "dependencies": {
     "@segment/analytics-next": "^1.59.0",
