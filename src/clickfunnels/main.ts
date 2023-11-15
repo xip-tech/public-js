@@ -104,9 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Attach listeners to all buttons currently on the page
-  document.querySelectorAll('.elButton').forEach((element: HTMLElement) => {
-    addButtonClickListener(element);
-  });
+  document.querySelectorAll('.elButton').forEach(addButtonClickListener);
 
   // MutationObserver to observe for new buttons added dynamically
   const observer = new MutationObserver((mutations) => {
