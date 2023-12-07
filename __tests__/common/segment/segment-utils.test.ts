@@ -1,3 +1,4 @@
+import { CookieCategory } from '../../../src/common/onetrust-utils';
 import {
   _test_allowSegmentReload,
   analytics,
@@ -7,51 +8,70 @@ import {
 } from '../../../src/common/segment/segment-utils';
 import { User } from '@segment/analytics-next';
 
+jest.mock('../../../src/common/onetrust-utils', () => {
+  const original = jest.requireActual('../../../src/common/onetrust-utils');
+  return {
+    __esModule: true,
+    ...original,
+    onConsentChange: jest
+      .fn()
+      .mockImplementation((callback) =>
+        callback([CookieCategory.PERFORMANCE, CookieCategory.STRICTLY_NECESSARY]),
+      ),
+    waitForInitialConsent: jest
+      .fn()
+      .mockImplementation(async () => [
+        CookieCategory.PERFORMANCE,
+        CookieCategory.STRICTLY_NECESSARY,
+      ]),
+  };
+});
+jest.mock('../../../src/common/segment/segment-destinations', () => {
+  const original = jest.requireActual('../../../src/common/segment/segment-destinations');
+  return {
+    __esModule: true,
+    ...original,
+    fetchDestinations: jest.fn().mockImplementation(async () => []),
+  };
+});
+
 describe('enableSegment', () => {
   beforeEach(() => {
     _test_allowSegmentReload();
   });
 
-  it('should load the first time it is called', () => {
+  it('should load the first time it is called', async () => {
     const mockLoad = jest.fn();
     const mockPage = jest.fn();
     analytics.load = mockLoad;
     analytics.page = mockPage;
 
-    enableSegment('abc123');
+    await enableSegment('abc123');
 
     expect(mockLoad).toHaveBeenCalledTimes(1);
-    expect(mockLoad).toHaveBeenCalledWith({ writeKey: 'abc123' });
-    expect(mockPage).toHaveBeenCalledTimes(1);
-  });
-
-  it('should be a no-op the second time it is called', () => {
-    const mockLoad = jest.fn();
-    const mockPage = jest.fn();
-    analytics.load = mockLoad;
-    analytics.page = mockPage;
-
-    enableSegment('abc123');
-    enableSegment('abc123');
-
-    expect(mockLoad).toHaveBeenCalledTimes(1);
-    expect(mockLoad).toHaveBeenCalledWith({ writeKey: 'abc123' });
-    expect(mockPage).toHaveBeenCalledTimes(1);
-  });
-
-  it('should complain if it is called with two different write keys', () => {
-    const mockLoad = jest.fn();
-    const mockPage = jest.fn();
-    analytics.load = mockLoad;
-    analytics.page = mockPage;
-
-    enableSegment('abc123');
-    expect(() => enableSegment('def456')).toThrow(
-      'Segment was already loaded with a different write key',
+    expect(mockLoad).toHaveBeenCalledWith(
+      expect.objectContaining({
+        writeKey: 'abc123',
+        plugins: expect.any(Array),
+      }),
+      // expect.anything(),
+      expect.objectContaining({
+        integrations: expect.any(Object),
+      }),
     );
+    expect(mockPage).toHaveBeenCalledTimes(1);
+  });
+
+  it('should throw an error the second time it is called', async () => {
+    const mockLoad = jest.fn();
+    const mockPage = jest.fn();
+    analytics.load = mockLoad;
+    analytics.page = mockPage;
+
+    await enableSegment('abc123');
+    await expect(enableSegment('abc123')).rejects.toThrow('Attempt to load segment more than once');
 
     expect(mockLoad).toHaveBeenCalledTimes(1);
-    expect(mockLoad).toHaveBeenCalledWith({ writeKey: 'abc123' });
     expect(mockPage).toHaveBeenCalledTimes(1);
   });
 });
