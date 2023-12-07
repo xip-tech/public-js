@@ -53,7 +53,7 @@ describe('enableSegment', () => {
         integrations: expect.any(Object),
       }),
     );
-    expect(analytics.page()).toHaveBeenCalledTimes(1);
+    expect(analytics.page).toHaveBeenCalledTimes(1);
   });
 
   it('should throw an error the second time it is called', async () => {
