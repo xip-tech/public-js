@@ -13,7 +13,7 @@ import {
   enableSegment,
   identifyFromEmail,
   trackFacebookBasicEvent,
-} from '../common/segment-utils';
+} from '../common/segment/segment-utils';
 import { initializeWistiaSegmentIntegration } from '../common/wistia-utils';
 
 enableSegment('KWF7tUxgxDY0FvsGHkV3bRTzEGcCrykK');

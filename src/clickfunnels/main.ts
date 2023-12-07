@@ -5,7 +5,7 @@ import {
   getAdditionalWindowData,
   identifyFromEmail,
   registerLiveEventHandler,
-} from '../common/segment-utils';
+} from '../common/segment/segment-utils';
 import { initializeWistiaSegmentIntegration } from '../common/wistia-utils';
 import { ClickfunnelsUrlEnrichmentPlugin } from '../clickfunnels/segment-utils';
 

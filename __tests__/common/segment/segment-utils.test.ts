@@ -4,7 +4,7 @@ import {
   currentSegmentUserEmail,
   enableSegment,
   identifyFromEmail,
-} from '../../src/common/segment-utils';
+} from '../../../src/common/segment/segment-utils';
 import { User } from '@segment/analytics-next';
 
 describe('enableSegment', () => {

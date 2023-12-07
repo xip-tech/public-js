@@ -1,4 +1,4 @@
-import { analytics, currentSegmentUserEmail } from './segment-utils';
+import { analytics, currentSegmentUserEmail } from './segment/segment-utils';
 import { CookieCategory, waitForInitialConsent } from './onetrust-utils';
 
 export const initializeWistiaSegmentIntegration = async () => {
