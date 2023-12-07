@@ -1,6 +1,9 @@
-import { AnalyticsBrowser } from '@segment/analytics-next';
+import { AnalyticsBrowser, AnalyticsBrowserSettings } from '@segment/analytics-next';
 import { CookieCategory, waitForInitialConsent } from './onetrust-utils';
 import { Destination, fetchDestinations } from './segment-destinations';
+import type { Plugin } from '@segment/analytics-next';
+import Cookies from 'js-cookie';
+import _ from 'lodash';
 
 /**
  * This is the shared instance of analytics (the Segment library) that should be used across the page.
@@ -66,8 +69,9 @@ const shouldLoadDestination = (
  * Only one write key can be used per page.
  *
  * @param writeKey The write key of the segment source that we wish to use for this page.
+ * @param plugins Optional list of plugins to enable.
  */
-export const enableSegment = async (writeKey: string): Promise<void> => {
+export const enableSegment = async (writeKey: string, ...plugins: Plugin[]): Promise<void> => {
   // Make sure we weren't asked to load segment a second time with a different write key.
   if (segmentLoadedWriteKey != null) {
     if (segmentLoadedWriteKey !== writeKey) {
@@ -94,7 +98,11 @@ export const enableSegment = async (writeKey: string): Promise<void> => {
   }
 
   // Load segment w/allowed destinations
-  analytics.load({ writeKey }, { integrations });
+  const settings: AnalyticsBrowserSettings = { writeKey };
+  if (plugins.length > 0) {
+    settings.plugins = plugins;
+  }
+  analytics.load(settings, { integrations });
 };
 
 /**
@@ -164,4 +172,71 @@ type FacebookBasicEvent =
  */
 export const trackFacebookBasicEvent = (eventName: FacebookBasicEvent) => {
   analytics.track(eventName, {}, { integrations: { All: false, 'Facebook Pixel': true } });
+};
+
+/**
+ * Get additional url and navigator properties that should be included with every event.
+ * @param window The current page window.
+ * @param navigator The current page navigator.
+ */
+export const getAdditionalWindowData = (window: Window, navigator: Navigator) => {
+  const url = new URL(window.location.href);
+
+  const queryParams: Record<string, string> = {};
+
+  for (const [key, value] of url.searchParams.entries()) {
+    queryParams[_.camelCase(key)] = value;
+  }
+
+  const additionalWindowData = {
+    url: url.toString(),
+    path: url.pathname,
+    userAgent: navigator.userAgent,
+    fbc: Cookies.get('fbc'),
+    fbp: Cookies.get('fbp'),
+    queryParams,
+  };
+
+  return additionalWindowData;
+};
+
+/**
+ * Registers a live event handler for a given selector and event.
+ * The handler will be called for all matching elements, including those added dynamically.
+ *
+ * @param selector - The CSS selector for the elements to attach the event listener to.
+ * @param event - The name of the event to listen for.
+ * @param callback - The function to call when the event is triggered.
+ */
+export const registerLiveEventHandler = (
+  selector: string,
+  event: string,
+  // eslint-disable-next-line no-unused-vars
+  callback: (event: Event) => void,
+): void => {
+  // Attach event listeners to existing elements
+  document.querySelectorAll(selector).forEach((element) => {
+    element.addEventListener(event, callback);
+  });
+
+  // MutationObserver to observe for new elements added dynamically
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node instanceof HTMLElement) {
+          // Check if the added node itself matches the selector
+          if (node.matches(selector)) {
+            node.addEventListener(event, callback);
+          }
+          // Also, check all its descendant nodes
+          node.querySelectorAll(selector).forEach((child) => {
+            child.addEventListener(event, callback);
+          });
+        }
+      });
+    });
+  });
+
+  // Start observing the document body for added nodes
+  observer.observe(document.body, { childList: true, subtree: true });
 };

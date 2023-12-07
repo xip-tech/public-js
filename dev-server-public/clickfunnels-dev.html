@@ -92,8 +92,11 @@
     <form id="clickfunnels-form" action="#" method="POST">
       <input type="text" name="email" placeholder="Email" />
       <input type="text" name="name" placeholder="Name" />
+      <input type="text" name="phone" placeholder="Phone" />
       <input type="submit" value="Submit" />
     </form>
+
+    <a target="_self" class="elButton" aria-label="" data-disabled="false" data-show-button-ids="" data-hide-button-ids="" data-on-submit-go-to="" data-param-submittingtext="Submitting..." data-style-guide-button="" rel="noopener"><span class="elButtonMain"><i class="fas fa-spinner fa-spin elButtonSpinner elButtonText"></i><span class="elButtonMainText elButtonText">Sign Up For My Course Now!</span></span><span class="elButtonSub"></span></a>
 
     <script>
       document.getElementById('clickfunnels-form').addEventListener('submit', function (e) {
@@ -106,7 +109,7 @@
           bodyData.append(pair[0], pair[1]);
         }
 
-        window.fetch('#courses.xip', {
+        window.fetch('#learn.xip', {
           method: 'POST',
           body: bodyData.toString(),
           headers: {
