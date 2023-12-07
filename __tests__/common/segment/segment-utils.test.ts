@@ -7,23 +7,18 @@ import {
   identifyFromEmail,
 } from '../../../src/common/segment/segment-utils';
 import { User } from '@segment/analytics-next';
+import { Destination } from '../../../src/common/segment/segment-destinations';
+import Mock = jest.Mock;
 
+let allowedCookieCategories: CookieCategory[] = [];
+let allDestinations: Destination[] = [];
 jest.mock('../../../src/common/onetrust-utils', () => {
   const original = jest.requireActual('../../../src/common/onetrust-utils');
   return {
     __esModule: true,
     ...original,
-    onConsentChange: jest
-      .fn()
-      .mockImplementation((callback) =>
-        callback([CookieCategory.PERFORMANCE, CookieCategory.STRICTLY_NECESSARY]),
-      ),
-    waitForInitialConsent: jest
-      .fn()
-      .mockImplementation(async () => [
-        CookieCategory.PERFORMANCE,
-        CookieCategory.STRICTLY_NECESSARY,
-      ]),
+    onConsentChange: jest.fn().mockImplementation((callback) => callback(allowedCookieCategories)),
+    waitForInitialConsent: jest.fn().mockImplementation(async () => allowedCookieCategories),
   };
 });
 jest.mock('../../../src/common/segment/segment-destinations', () => {
@@ -31,25 +26,24 @@ jest.mock('../../../src/common/segment/segment-destinations', () => {
   return {
     __esModule: true,
     ...original,
-    fetchDestinations: jest.fn().mockImplementation(async () => []),
+    fetchDestinations: jest.fn().mockImplementation(async () => allDestinations),
   };
 });
 
 describe('enableSegment', () => {
   beforeEach(() => {
+    analytics.load = jest.fn();
+    analytics.page = jest.fn();
+    allowedCookieCategories = [CookieCategory.PERFORMANCE, CookieCategory.STRICTLY_NECESSARY];
+    allDestinations = [];
     _test_allowSegmentReload();
   });
 
   it('should load the first time it is called', async () => {
-    const mockLoad = jest.fn();
-    const mockPage = jest.fn();
-    analytics.load = mockLoad;
-    analytics.page = mockPage;
-
     await enableSegment('abc123');
 
-    expect(mockLoad).toHaveBeenCalledTimes(1);
-    expect(mockLoad).toHaveBeenCalledWith(
+    expect(analytics.load).toHaveBeenCalledTimes(1);
+    expect(analytics.load).toHaveBeenCalledWith(
       expect.objectContaining({
         writeKey: 'abc123',
         plugins: expect.any(Array),
@@ -59,20 +53,54 @@ describe('enableSegment', () => {
         integrations: expect.any(Object),
       }),
     );
-    expect(mockPage).toHaveBeenCalledTimes(1);
+    expect(analytics.page()).toHaveBeenCalledTimes(1);
   });
 
   it('should throw an error the second time it is called', async () => {
-    const mockLoad = jest.fn();
-    const mockPage = jest.fn();
-    analytics.load = mockLoad;
-    analytics.page = mockPage;
-
     await enableSegment('abc123');
     await expect(enableSegment('abc123')).rejects.toThrow('Attempt to load segment more than once');
 
-    expect(mockLoad).toHaveBeenCalledTimes(1);
-    expect(mockPage).toHaveBeenCalledTimes(1);
+    expect(analytics.load).toHaveBeenCalledTimes(1);
+    expect(analytics.page).toHaveBeenCalledTimes(1);
+  });
+
+  it('should enable destinations based on consent', async () => {
+    // Only allow strictly necessary
+    allowedCookieCategories = [CookieCategory.STRICTLY_NECESSARY];
+
+    // Create some other destinations too
+    allDestinations = [
+      { id: '1', name: 'Heap', description: '', website: '', category: 'Analytics' },
+      {
+        id: '2',
+        name: 'Facebook Pixel',
+        description: '',
+        website: '',
+        category: 'Advertising',
+      },
+      {
+        id: '3',
+        name: 'Customer.io',
+        description: '',
+        website: '',
+        category: 'Raw Data',
+      },
+    ];
+
+    await enableSegment('abc123');
+
+    // Make sure load was called w/the correct args
+    expect(analytics.load).toHaveBeenCalledTimes(1);
+    const loadArgs = (analytics.load as Mock).mock.calls[0];
+    expect(loadArgs[1]).toEqual(
+      expect.objectContaining({
+        integrations: {
+          Heap: false,
+          'Facebook Pixel': false,
+          'Customer.io': true,
+        },
+      }),
+    );
   });
 });
 
