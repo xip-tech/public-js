@@ -1,7 +1,6 @@
-import { AnalyticsBrowser, AnalyticsBrowserSettings } from '@segment/analytics-next';
+import { AnalyticsBrowser, Context, Plugin } from '@segment/analytics-next';
 import { CookieCategory, waitForInitialConsent } from './onetrust-utils';
 import { Destination, fetchDestinations } from './segment-destinations';
-import type { Plugin } from '@segment/analytics-next';
 import Cookies from 'js-cookie';
 import _ from 'lodash';
 
@@ -98,11 +97,39 @@ export const enableSegment = async (writeKey: string, ...plugins: Plugin[]): Pro
   }
 
   // Load segment w/allowed destinations
-  const settings: AnalyticsBrowserSettings = { writeKey };
-  if (plugins.length > 0) {
-    settings.plugins = plugins;
-  }
-  analytics.load(settings, { integrations });
+  analytics.load(
+    {
+      writeKey,
+      plugins: [
+        consentEnrichmentPlugin(allowedCategories), // Register a plugin that will add the consent to every event
+        ...plugins,
+      ],
+    },
+    { integrations },
+  );
+};
+
+/**
+ * A Segment plugin that will add the user's consent as a property on every event.
+ *
+ * @param allowedCategories
+ */
+const consentEnrichmentPlugin = (allowedCategories: CookieCategory[]): Plugin => {
+  const enrichWithConsent = (path: string) => (ctx: Context) => {
+    ctx.updateEvent(path, allowedCategories.join(','));
+    return ctx;
+  };
+
+  return {
+    name: 'OneTrust Consent',
+    type: 'enrichment',
+    version: '1.0.0',
+    isLoaded: () => true,
+    load: () => Promise.resolve(),
+    track: enrichWithConsent('properties.consent'),
+    identify: enrichWithConsent('traits.consent'),
+    page: enrichWithConsent('properties.consent'),
+  };
 };
 
 /**
