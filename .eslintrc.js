@@ -16,7 +16,7 @@ module.exports = {
     'prettier/prettier': 'error',
     curly: 'error',
     'no-undef': 'error',
-    'no-unused-vars': 'error',
+    '@typescript-eslint/no-unused-vars': 'error',
     'no-redeclare': 'error',
     'prefer-const': 'error',
     'no-var': 'error',
