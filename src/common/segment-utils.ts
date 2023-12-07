@@ -12,13 +12,13 @@ import _ from 'lodash';
  */
 export const analytics = new AnalyticsBrowser();
 
-let segmentLoadedWriteKey: null | string = null;
+let segmentLoaded: boolean = false;
 
 /**
  * For testing purposes only. This method should not be called in production code.
  */
 export const _test_allowSegmentReload = () => {
-  segmentLoadedWriteKey = null;
+  segmentLoaded = false;
 };
 
 const DESTINATION_NAME_TO_COOKIE_CATEGORY: Record<string, CookieCategory> = {
@@ -71,16 +71,11 @@ const shouldLoadDestination = (
  * @param plugins Optional list of plugins to enable.
  */
 export const enableSegment = async (writeKey: string, ...plugins: Plugin[]): Promise<void> => {
-  // Make sure we weren't asked to load segment a second time with a different write key.
-  if (segmentLoadedWriteKey != null) {
-    if (segmentLoadedWriteKey !== writeKey) {
-      throw new Error('Segment was already loaded with a different write key');
-    } else {
-      // We were asked to load a second time with the same write key. Ignore it.
-      return;
-    }
+  // Don't allow this method to be called more than once
+  if (segmentLoaded) {
+    throw new Error('Attempt to load segment more than once');
   }
-  segmentLoadedWriteKey = writeKey;
+  segmentLoaded = true;
 
   // Track the initial page event. This will be buffered until we actually call analytics.load.
   analytics.page();
