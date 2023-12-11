@@ -1,7 +1,9 @@
-import { AnalyticsBrowser } from '@segment/analytics-next';
-import type { Plugin } from '@segment/analytics-next';
+import { AnalyticsBrowser, Plugin } from '@segment/analytics-next';
+import { waitForInitialConsent } from '../onetrust-utils';
+import { fetchDestinations } from './segment-destinations';
 import Cookies from 'js-cookie';
 import _ from 'lodash';
+import { consentEnrichmentPlugin, shouldLoadDestination } from './segment-consent';
 
 /**
  * This is the shared instance of analytics (the Segment library) that should be used across the page.
@@ -11,13 +13,13 @@ import _ from 'lodash';
  */
 export const analytics = new AnalyticsBrowser();
 
-let segmentLoadedWriteKey: null | string = null;
+let segmentLoaded: boolean = false;
 
 /**
  * For testing purposes only. This method should not be called in production code.
  */
 export const _test_allowSegmentReload = () => {
-  segmentLoadedWriteKey = null;
+  segmentLoaded = false;
 };
 
 /**
@@ -30,18 +32,38 @@ export const _test_allowSegmentReload = () => {
  * @param writeKey The write key of the segment source that we wish to use for this page.
  * @param plugins Optional list of plugins to enable.
  */
-export const enableSegment = (writeKey: string, ...plugins: Plugin[]) => {
-  if (segmentLoadedWriteKey == null) {
-    if (plugins.length > 0) {
-      analytics.load({ writeKey, plugins });
-    } else {
-      analytics.load({ writeKey });
-    }
-    analytics.page();
-    segmentLoadedWriteKey = writeKey;
-  } else if (segmentLoadedWriteKey !== writeKey) {
-    throw new Error('Segment was already loaded with a different write key');
+export const enableSegment = async (writeKey: string, ...plugins: Plugin[]): Promise<void> => {
+  // Don't allow this method to be called more than once
+  if (segmentLoaded) {
+    throw new Error('Attempt to load segment more than once');
   }
+  segmentLoaded = true;
+
+  // Track the initial page event. This will be buffered until we actually call analytics.load.
+  analytics.page();
+
+  // Find the list of destinations that are configured for this write key, and wait for consent to be expressed (either
+  // saved from a previous visit or via the user interacting with the banner)
+  const segmentDestinations = await fetchDestinations(writeKey);
+  const allowedCategories = await waitForInitialConsent();
+
+  // Turn on or off each destination based on the user's consent
+  const integrations: Record<string, boolean> = {};
+  for (const destination of segmentDestinations) {
+    integrations[destination.name] = shouldLoadDestination(destination, allowedCategories);
+  }
+
+  // Load segment w/allowed destinations
+  analytics.load(
+    {
+      writeKey,
+      plugins: [
+        consentEnrichmentPlugin(allowedCategories), // Register a plugin that will add the consent to every event
+        ...plugins,
+      ],
+    },
+    { integrations },
+  );
 };
 
 /**

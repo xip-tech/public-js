@@ -2,10 +2,10 @@ import _ from 'lodash';
 import {
   analytics,
   enableSegment,
-  identifyFromEmail,
   getAdditionalWindowData,
+  identifyFromEmail,
   registerLiveEventHandler,
-} from '../common/segment-utils';
+} from '../common/segment/segment-utils';
 import { initializeWistiaSegmentIntegration } from '../common/wistia-utils';
 import { ClickfunnelsUrlEnrichmentPlugin } from '../clickfunnels/segment-utils';
 
@@ -68,8 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const buttonText = element.textContent?.trim() || '';
     const additionalEventData = getAdditionalWindowData(window, navigator);
-
-    console.log('buttonText', buttonText);
 
     // Track the click event with analytics
     analytics.track('Clickfunnels Button Clicked', {

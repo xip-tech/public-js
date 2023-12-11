@@ -1,6 +1,13 @@
-import { analytics, currentSegmentUserEmail } from './segment-utils';
+import { analytics, currentSegmentUserEmail } from './segment/segment-utils';
+import { CookieCategory, waitForInitialConsent } from './onetrust-utils';
 
-export const initializeWistiaSegmentIntegration = () => {
+export const initializeWistiaSegmentIntegration = async () => {
+  // Make sure the user has consented to performance cookies
+  const consent = await waitForInitialConsent();
+  if (!consent.includes(CookieCategory.PERFORMANCE)) {
+    return;
+  }
+
   window._wq = window._wq || [];
   window._wq.push({
     id: '_all',
